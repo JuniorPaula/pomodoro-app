@@ -12,19 +12,53 @@ interface Props {
 
 export function PomodoroTimer(props: Props): JSX.Element {
   const [mainTimer, setMainTimer] = React.useState(props.pomodoroTime);
+  const [timerCounting, setTimerCounting] = React.useState(false);
+  const [working, setWorking] = React.useState(false);
+  const [resting, setResting] = React.useState(false);
 
-  useInterval(() => {
-    setMainTimer(mainTimer - 1);
-  }, 1000);
+  React.useEffect(() => {
+    if (working) document.body.classList.add('working');
+    if (resting) document.body.classList.remove('working');
+  }, [working]);
+
+  useInterval(
+    () => {
+      setMainTimer(mainTimer - 1);
+    },
+    timerCounting ? 1000 : null
+  );
+
+  const configureWork = () => {
+    setTimerCounting(true);
+    setWorking(true);
+    setResting(false);
+    setMainTimer(props.pomodoroTime);
+  };
+
+  const configureRest = (long: boolean) => {
+    setTimerCounting(true);
+    setWorking(false);
+    setResting(true);
+
+    if (long) {
+      setMainTimer(props.longRestTimer);
+    } else {
+      setMainTimer(props.shortRestTime);
+    }
+  };
 
   return (
     <div className="pomodoro">
       <h2>Status: Trabalando...</h2>
       <Timer mainTimer={mainTimer} />
       <div className="controls">
-        <Button text="teste" />
-        <Button text="teste" />
-        <Button text="teste" />
+        <Button text="Work" onClick={() => configureWork()} />
+        <Button text="Rest" onClick={() => configureRest(false)} />
+        <Button
+          clasName={!working && !resting ? 'hidden' : ''}
+          text={timerCounting ? 'Pause' : 'Play'}
+          onClick={() => setTimerCounting(!timerCounting)}
+        />
       </div>
 
       <div className="details">
